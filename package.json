@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "puppeteer": "^1.18.1"
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "puppeteer": "^1.18.1",
+    "request": "^2.88.0"
   },
   "devDependencies": {},
   "scripts": {
