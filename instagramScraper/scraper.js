@@ -8,7 +8,7 @@ const db = low(adapter);
 const shortid = require('shortid');
 
 
-module.exports = function (numOfPhotos, hashtag) {
+module.exports = function (numOfPhotos, hashtag, isHeadless = true) {
     const INSTAGRAM_URL = (tag) => `https://www.instagram.com/explore/tags/${tag}/`;
     const TAG = hashtag;
 
@@ -114,7 +114,7 @@ module.exports = function (numOfPhotos, hashtag) {
     (async () => {
         db.defaults({ posts: [], user: {} })
             .write();
-        const browser = await asyncBrowser(INSTAGRAM_URL(TAG), true);
+        const browser = await asyncBrowser(INSTAGRAM_URL(TAG), isHeadless);
         const posts = await asyncgetIstaPosts(browser.firstPage, 'article > div:nth-child(3) a', 150);
         downloadPosts(browser.browser, posts, numOfPhotos);
     })();
