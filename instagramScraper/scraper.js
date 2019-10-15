@@ -8,7 +8,7 @@ const db = low(adapter);
 const shortid = require('shortid');
 
 
-module.exports = function (numOfPhotos, hashtag, isHeadless = true) {
+module.exports = function (numOfPhotos, hashtag, isHeadless = false) {
     const INSTAGRAM_URL = (tag) => `https://www.instagram.com/explore/tags/${tag}/`;
     const TAG = hashtag;
 
@@ -57,7 +57,7 @@ module.exports = function (numOfPhotos, hashtag, isHeadless = true) {
     const getInstaPostSrc = async (page) => {
         let imageUrl = await page.evaluate(() => {
             let img = document.querySelector("img[srcset]");
-            if (img.alt != "Instagram") {
+            if (img.alt != "Instagram" && img != undefined) {
                 return img.src
             }
         });
