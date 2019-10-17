@@ -5,12 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
     <title>Diplomová práce</title>
-    <!-- Bootstrap -->
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
         integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 </head>
+    <link rel="stylesheet" href="styles.css">
 
 <body>
     <div>
@@ -23,7 +24,8 @@
                     <label>#hashtag</label>
                     <input class="form-control col-3 p-2" type="text" name="hashtag" required />
                     <label>Number of Photos</label>
-                    <input class="form-control col-3 p-2" type="number" name="numOfPhotos" value="25" required />
+                    <input class="form-control col-3 p-2" type="number" name="numOfPhotos" value="5" required />
+                    <input type="checkbox" name="isHeadless" value="isHeadless" checked> Headless mode<br>
                     <input type="submit" value="Download!" class="btn btn-secondary p-2" onclick="handleScrape()" />
                 </form>
 
@@ -60,19 +62,59 @@
                     </svg>
                 </div>
             </div>
+            <div id="photoTable">
+                
+            </div>
         </div>
     </div>
-
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"
         integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
         crossorigin="anonymous"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
+
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
         integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
         crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="index.js"></script>
+
 </body>
 
 </html>
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Socket.io</title>
+</head>
+
+<body>
+    <h1>Communicating with socket.io!</h1>
+
+    <p><input type="button" value="Poke the server" id="poke" /></p>
+
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://localhost:8080');
+
+        // // The visitor is asked for their username...
+        // var username = prompt('What\'s your username?');
+
+        // // It's sent with the signal "little_newbie" (to differentiate it from "message")
+        // socket.emit('little_newbie', username);
+
+        // // A dialog box is displayed when the server sends us a "message"
+        // socket.on('message', function (message) {
+        //     alert('The server has a message for you: ' + message);
+        // })
+
+        // // When the button is clicked, a "message" is sent to the server
+        // $('#poke').click(function () {
+        //     socket.emit('message', 'Hi server, how are you?');
+        // })
+    </script>
+</body>
+
+</html> -->

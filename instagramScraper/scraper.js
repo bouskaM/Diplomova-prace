@@ -74,20 +74,20 @@ module.exports = function (numOfPhotos, hashtag, isHeadless = false) {
             photoTab.close();
             if (src) {
                 counter++;
-                if (!fs.existsSync(TAG)) {
-                    fs.mkdirSync(TAG);
+                if (!fs.existsSync('./scraped/' + TAG)) {
+                    fs.mkdirSync('./scraped/' + TAG);
                 }
 
                 let uniqueId = shortid.generate();
 
 
-                result = await download(src, `./${TAG}/image-${uniqueId}.png`);
+                result = await download(src, `./scraped/${TAG}/${uniqueId}.png`);
                 if (result === true) {
                     console.log('Success:', posts[i], 'has been downloaded successfully.');
                     i++;
                     // Add a post
                     db.get('posts')
-                        .push({ id: uniqueId, tag: TAG, url: src, pwd: `./${TAG}/image-${uniqueId}.png` })
+                        .push({ id: uniqueId, tag: TAG, url: src, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl:`/${TAG}/${uniqueId}.png`  })
                         .write()
                 } else {
                     console.log('Error:', posts[i], 'was not downloaded.');
@@ -112,10 +112,11 @@ module.exports = function (numOfPhotos, hashtag, isHeadless = false) {
     });
 
     (async () => {
-        db.defaults({ posts: [], user: {} })
+        db.defaults({ posts: [] })
             .write();
         const browser = await asyncBrowser(INSTAGRAM_URL(TAG), isHeadless);
         const posts = await asyncgetIstaPosts(browser.firstPage, 'article > div:nth-child(3) a', 150);
-        downloadPosts(browser.browser, posts, numOfPhotos);
+        await downloadPosts(browser.browser, posts, numOfPhotos);
+        await browser.browser.close();
     })();
 }
