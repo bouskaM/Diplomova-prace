@@ -6,6 +6,7 @@ const fs = require("fs");
 var path = require("path");
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
+const shortid = require('shortid');
 
 
 server.listen(80);
@@ -13,6 +14,9 @@ server.listen(80);
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/web/index.html');
+});
+app.get('/ts', function (req, res) {
+    res.sendFile(__dirname + '/web/TS.html');
 });
 
 app.use(express.static('public'));
@@ -24,6 +28,17 @@ io.on('connection', function (socket) {
     socket.on('delIds', function (idArray) {
         deleteByIds(idArray);
     });
+    socket.on('saveClassifier', function (data) {
+        console.log(data);
+        //     let dbFile = fs.readFileSync("../classifiers.json");
+        //     let uniqueId = shortid.generate();
+        //     classifierDB.defaults({ classifiers: [] })
+        //     .write();
+
+        //     db.get('classifiers')
+        //     .push({ id: uniqueId, name: TAG, url: src, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl:`/${TAG}/${uniqueId}.png`  })
+        //     .write()
+    })
 });
 
 app.post('/download-photos', (req, res) => {
@@ -67,6 +82,6 @@ const deleteByIds = (ids) => {
         db.get('posts')
             .remove({ id: ID })
             .write();
-        fs.unlink('../scraped/' + post.tag + '/' + ID +".png", () => { console.log("Image " + ID + " was deleted") });
+        fs.unlink('../scraped/' + post.tag + '/' + ID + ".png", () => { console.log("Image " + ID + " was deleted") });
     });
 }

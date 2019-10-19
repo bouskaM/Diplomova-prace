@@ -1,6 +1,4 @@
 let idsToDelete = [];
-
-
 const handleScrape = () => {
     const url = "/download-photos";
     const tag = document.getElementsByName("hashtag")[0].value;
@@ -18,7 +16,6 @@ const handleScrape = () => {
         },
     });
 }
-
 var socket = io.connect('http://localhost');
 socket.on('dbChange', function (data) {
     createPhotoTable(data);
@@ -28,6 +25,10 @@ socket.on('initLoadPhotos', function (data) {
 });
 socket.on('downloadingDone', function () {
     $(".loader").hide();
+});
+
+socket.on('testClassifier', function (cls) {
+    console.log(cls);
 });
 
 const postDeleteIds = async () => {
@@ -71,14 +72,29 @@ const createPhotoTable = (data) => {
             postDeleteIds();
         })
     }
+    if (($(".teachAllButton").length == 0)) {
+        let teachAllButton = document.createElement("button");
+        teachAllButton.setAttribute("class", "teachAllButton btn btn-success");
+        teachAllButton.innerHTML = "Teach All Hashtags!";
+        $("#photoTable").append(teachAllButton);
+        $(teachAllButton).on("click", () => {
+            teachAll(getHashtags(data));
+        })
+    }
+
     let tags = getHashtags(data);
 
     tags.forEach(tag => {
         if ($("." + tag).length == 0) {
             let div = document.createElement("div")
-            div.innerHTML = '<h1>#' + tag + '</h1>'
+            div.innerHTML = '<div id="tagRepresent' + tag + '"><h1>#' + tag + '</h1></div>'
             div.setAttribute("class", tag + " tagDiv");
             $("#photoTable").append(div);
+            $("#tagRepresent" + tag).on("click", () => {
+                $("." + tag).find("img").each((i, el) => {
+                    toggleDelete(el.id);
+                })
+            })
         }
 
 
@@ -92,12 +108,19 @@ const createPhotoTable = (data) => {
 
                     $(".tagDiv").find("#" + post.id).on("click", (event) => {
                         toggleDelete(event.target.id);
-                        console.log(idsToDelete);
                     })
                 }
             }
         })
 
+        $(".teachButtonFor" + tag).remove();
+        let teachButton = document.createElement("button");
+        teachButton.setAttribute("class", "teachButtonFor" + tag + " btn btn-success");
+        teachButton.innerHTML = "Teach hashtag " + tag;
+        $("." + tag).append(teachButton);
+        $(teachButton).on("click", () => {
+            teach(tag);
+        })
 
     });
 
@@ -132,7 +155,6 @@ $(document).ready(() => {
     $("#photoDownloadForm").submit(function (e) {
         e.preventDefault();
     });
-
-
 });
+
 

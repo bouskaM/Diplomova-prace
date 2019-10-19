@@ -10,8 +10,12 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
         integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-</head>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+    <script src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
+    <script src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
+</head>
+
 
 <body>
     <div>
@@ -63,7 +67,11 @@
                 </div>
             </div>
             <div id="photoTable">
-                
+
+            </div>
+            <div class="classifierTable">
+                <h1>Classifiers:</h1>
+                <span></span>
             </div>
         </div>
     </div>
@@ -76,6 +84,7 @@
         crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="index.js"></script>
+    <script src="ts.js"></script>
 
 </body>
 
