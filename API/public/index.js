@@ -26,7 +26,10 @@ socket.on('initLoadPhotos', function (data) {
 socket.on('downloadingDone', function () {
     $(".loader").hide();
 });
-
+socket.on('savedClassifiers', function (data) {
+    console.log(data);
+    savedClassifiersData = data;
+});
 socket.on('testClassifier', function (cls) {
     console.log(cls);
 });
@@ -35,7 +38,6 @@ const postDeleteIds = async () => {
     await socket.emit("delIds", idsToDelete);
     window.location.reload();
 }
-
 const getHashtags = (data) => {
     let tags = [];
     data.posts.forEach(element => {
@@ -44,7 +46,6 @@ const getHashtags = (data) => {
     tags = [...new Set(tags)];
     return tags;
 }
-
 const getIds = (data) => {
     let ids = [];
     data.posts.forEach(element => {
@@ -59,7 +60,6 @@ const getCurrentIds = () => {
     ids = [...new Set(ids)];
     return ids;
 }
-
 const createPhotoTable = (data) => {
     checkForDifferences(data);
     if (($(".delButton").length == 0)) {
@@ -87,7 +87,7 @@ const createPhotoTable = (data) => {
     tags.forEach(tag => {
         if ($("." + tag).length == 0) {
             let div = document.createElement("div")
-            div.innerHTML = '<div id="tagRepresent' + tag + '"><h1>#' + tag + '</h1></div>'
+            div.innerHTML = '<div id="tagRepresent' + tag + '"><h1>#' + tag + '</h1></div> <h3 class="postCount"></h3>'
             div.setAttribute("class", tag + " tagDiv");
             $("#photoTable").append(div);
             $("#tagRepresent" + tag).on("click", () => {
@@ -105,12 +105,13 @@ const createPhotoTable = (data) => {
                     img.setAttribute("src", post.webUrl);
                     img.setAttribute("id", post.id);
                     $("." + tag).append(img);
-
                     $(".tagDiv").find("#" + post.id).on("click", (event) => {
                         toggleDelete(event.target.id);
                     })
+                    $("#tagRepresent" + tag).siblings(".postCount").html( $("." + tag + " img").length + " posts");
                 }
             }
+
         })
 
         $(".teachButtonFor" + tag).remove();
@@ -135,7 +136,6 @@ const toggleDelete = (id) => {
     }
     toggleDelButton();
 }
-
 const toggleDelButton = () => {
     if (idsToDelete.length > 0) {
         $(".delButton").removeAttr("disabled")
@@ -143,7 +143,6 @@ const toggleDelButton = () => {
         $(".delButton").attr("disabled", "")
     }
 }
-
 const checkForDifferences = (data) => {
     getCurrentIds().forEach((el) => {
         if (getIds(data).indexOf(el) == -1) {
