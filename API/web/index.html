@@ -38,6 +38,7 @@
                                 <input class="form-control col-3 p-2" type="number" name="numOfPhotos" value="5"
                                     required />
                                 <input type="checkbox" name="isHeadless" value="isHeadless" > Headless mode<br>
+                                <input type="checkbox" name="isFast" value="isFast" checked > Fastmode (downloads thumbnails of posts)<br>
                                 <input type="submit" value="Download!" class="btn btn-secondary p-2"
                                     onclick="handleScrape()" />
                             </form>
@@ -75,6 +76,8 @@
                                 </svg>
                             </div>
                         </div>
+                        <div id="controlButtons"></div>
+                        <div id="teachButtons"></div>
                         <div id="photoTable">
                         </div>
 
@@ -127,7 +130,7 @@
 
                 <div class="testPhotos">
                     <div class="myTestImgDiv">
-                        <input class="" type='file' />
+                        <input class="testClassificatior" type='file' />
                         <div>
                             <img id="myTestImg" src="#" alt="your image" height=200 hidden>
                             <pre hidden><code></code></pre>

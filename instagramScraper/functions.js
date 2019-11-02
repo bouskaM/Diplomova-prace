@@ -40,6 +40,70 @@ const asyncgetIstaPosts = async (page, selector, reqPostCount) => {
     }, { selector, reqPostCount });
     return posts;
 }
+const asyncdownloadIstaThumbs = async (page, selector, reqPostCount, TAG) => {
+    let posts = await page.evaluate(async ({ selector, reqPostCount }) => {
+        let links = [];
+        let counter = 0;
+        return new Promise((resolve, reject) => {
+            var i = setInterval(() => {
+                let selElement = document.querySelector(selector);
+                selElement.scrollIntoView();
+                links.push(selElement.src);
+                selElement.remove();
+                counter++;
+                if (counter >= reqPostCount) {
+                    clearInterval(i);
+                    resolve(links);
+                }
+            }, 200);
+        }).then((data) => {
+            return data;
+        });
+
+    }, { selector, reqPostCount });
+    return posts;
+}
+
+const downloadIstaThumbs = async (browser, page, selector, reqPostCount, TAG) => {
+    let photosDownloaded = 0;
+    let maxcounter = 0;
+    let interval = setInterval(async () => {
+        maxcounter++;
+        if (photosDownloaded >= reqPostCount) {
+            clearInterval(interval);
+            browser.close();
+        }
+        let post = await page.evaluate(async ({ selector, reqPostCount }) => {
+            return new Promise((resolve, reject) => {
+                let selElement = document.querySelector(selector);
+                selElement.scrollIntoView();
+                let link = selElement.src;
+                selElement.remove();
+                resolve(link);
+            }).then((data) => {
+                return data;
+            });
+        }, { selector, reqPostCount });
+        if (post && maxcounter <= reqPostCount) {
+            if (!fs.existsSync('./scraped/' + TAG)) {
+                fs.mkdirSync('./scraped/' + TAG);
+            }
+            let uniqueId = shortid.generate();
+            result = await download(post, `./scraped/${TAG}/${uniqueId}.png`);
+            if (result === true) {
+                photosDownloaded++;
+                db.get('posts')
+                    .push({ id: uniqueId, tag: TAG, url: post, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl: `/${TAG}/${uniqueId}.png` })
+                    .write()
+                result = "";
+            } else {
+                console.log('Error:', post, 'was not downloaded.');
+                console.error(result);
+            }
+        }
+    }, 150);
+}
+
 const newTab = async (browser, url) => {
     let tab = await browser.newPage();
     await tab.goto(url, { waitUntil: 'networkidle0' });
@@ -66,7 +130,6 @@ const downloadPosts = async (browser, posts, count, TAG) => {
             if (result === true) {
                 console.log('Success:', posts[i], 'has been downloaded successfully.');
                 i++;
-                // Add a post
                 db.get('posts')
                     .push({ id: uniqueId, tag: TAG, url: src, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl: `/${TAG}/${uniqueId}.png` })
                     .write()
@@ -91,12 +154,33 @@ const download = (url, destination) => new Promise((resolve, reject) => {
             reject(error.message);
         });
 });
+const downloadAll = (arrOfLinks, TAG) => new Promise((resolve, reject) => {
+    arrOfLinks.forEach(async (element) => {
+        if (!fs.existsSync('./scraped/' + TAG)) {
+            fs.mkdirSync('./scraped/' + TAG);
+        }
+
+        let uniqueId = shortid.generate();
+
+        result = await download(element, `./scraped/${TAG}/${uniqueId}.png`);
+
+        if (result === true) {
+            // Add a post
+            await db.get('posts')
+                .push({ id: uniqueId, tag: TAG, url: element, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl: `/${TAG}/${uniqueId}.png` })
+                .write()
+        } else {
+            console.error(result);
+        }
+    });
+});
+
 const getInstaPostSrc = async (page) => {
     let imageUrl = await page.evaluate(() => {
         let img = document.querySelector("img[srcset]");
-        if (img != undefined  && img.alt != "Instagram") {
+        if (img != undefined && img.alt != "Instagram") {
             return img.src
-        } else{
+        } else {
             return undefined;
         }
     });
@@ -104,5 +188,5 @@ const getInstaPostSrc = async (page) => {
 }
 
 module.exports = {
-    asyncBrowser, asyncgetIstaPosts, newTab, getInstaPostSrc, downloadPosts, download
+    asyncBrowser, asyncgetIstaPosts, newTab, getInstaPostSrc, downloadPosts, download, asyncdownloadIstaThumbs, downloadAll, downloadIstaThumbs
 }

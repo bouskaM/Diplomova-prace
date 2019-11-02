@@ -1,12 +1,13 @@
-let idsToDelete = [];
+let selectedIDs = [];
 const handleScrape = () => {
     const url = "/download-photos";
     const tag = document.getElementsByName("hashtag")[0].value;
     const numOfPhotos = document.getElementsByName("numOfPhotos")[0].value;
     const isHeadless = document.getElementsByName("isHeadless")[0].checked;
-    const data = { "tag": tag, "numOfPhotos": numOfPhotos, "isHeadless": isHeadless };
+    const isFast = document.getElementsByName("isFast")[0].checked;
+    const data = { "tag": tag, "numOfPhotos": numOfPhotos, "isHeadless": isHeadless, "isFast": isFast };
     $.ajax({
-        url: '/download-photos',
+        url: url,
         type: 'post',
         dataType: 'json',
         contentType: 'application/json',
@@ -35,9 +36,20 @@ socket.on('testClassifier', function (cls) {
 });
 
 const postDeleteIds = async () => {
-    await socket.emit("delIds", idsToDelete);
+    await socket.emit("delIds", selectedIDs);
     window.location.reload();
 }
+
+const moveSelected = async (destination) => {
+    await socket.emit("moveIds", { selectedIDs, destination });
+    window.location.reload();
+}
+const createNewFolder = async (name) => {
+    if (name != "") {
+        newFolder(name);
+    }
+}
+
 const getHashtags = (data) => {
     let tags = [];
     data.posts.forEach(element => {
@@ -60,14 +72,27 @@ const getCurrentIds = () => {
     ids = [...new Set(ids)];
     return ids;
 }
+const newFolder = (tag) => {
+    if ($("." + tag).length == 0) {
+        let div = document.createElement("div")
+        div.innerHTML = `<div id="tagRepresent` + tag + `"><h1>#` + tag + `</h1></div> <h3 class="postCount"></h3> <form action="/photos/upload" enctype="multipart/form-data" method="post"><label>Upload own photos: </label><input name="tag" type="hidden" value="` + tag + `"> <input name="ownPhotos" class="multipleFiles filesFor` + tag + `" type="file" multiple /> <input type="submit" class="btn btn-info" value="Upload"></form>`
+        div.setAttribute("class", tag + " tagDiv");
+        $("#photoTable").append(div);
+        $("#tagRepresent" + tag).on("click", () => {
+            $("." + tag).find("img").each((i, el) => {
+                toggleDelete(el.id);
+            })
+        })
+    }
+}
 const createPhotoTable = (data) => {
     checkForDifferences(data);
     if (($(".delButton").length == 0)) {
         let delButton = document.createElement("button");
         delButton.setAttribute("class", "delButton btn btn-danger");
         delButton.setAttribute("disabled", '');
-        delButton.innerHTML = "Delte Selected";
-        $("#photoTable").append(delButton);
+        delButton.innerHTML = "Delete Selected";
+        $("#controlButtons").append(delButton);
         $(delButton).on("click", () => {
             postDeleteIds();
         })
@@ -76,28 +101,50 @@ const createPhotoTable = (data) => {
         let teachAllButton = document.createElement("button");
         teachAllButton.setAttribute("class", "teachAllButton btn btn-success");
         teachAllButton.innerHTML = "Teach All Hashtags!";
-        $("#photoTable").append(teachAllButton);
+        $("#teachButtons").append(teachAllButton);
         $(teachAllButton).on("click", () => {
             teachAll(getHashtags(data));
         })
     }
 
+    if (($(".moveSelectedBtn").length == 0)) {
+        let moveSelectedBtn = document.createElement("button");
+        moveSelectedBtn.setAttribute("class", "moveSelectedBtn btn btn-info");
+        moveSelectedBtn.innerHTML = "Move selected to: ";
+        $("#controlButtons").append(moveSelectedBtn);
+        $(moveSelectedBtn).on("click", () => {
+            moveSelected($(".moveTo").val());
+        })
+    }
+    if (($(".moveTo").length == 0)) {
+        let moveTo = document.createElement("input");
+        moveTo.setAttribute("class", "moveTo smallInput");
+        $("#controlButtons").append(moveTo);
+    }
+
+    if (($(".createNewFolderBtn").length == 0)) {
+        let createNewFolderBtn = document.createElement("button");
+        createNewFolderBtn.setAttribute("class", "createNewFolderBtn btn btn-info m-2");
+        createNewFolderBtn.innerHTML = "Create new folder: ";
+        $("#controlButtons").append(createNewFolderBtn);
+        $(createNewFolderBtn).on("click", () => {
+            createNewFolder($(".newFolder").val());
+        })
+    }
+
+    if (($(".newFolder").length == 0)) {
+        let newFolder = document.createElement("input");
+        newFolder.setAttribute("class", "newFolder smallInput");
+        $("#controlButtons").append(newFolder);
+    }
+
+
+
     let tags = getHashtags(data);
 
+
     tags.forEach(tag => {
-        if ($("." + tag).length == 0) {
-            let div = document.createElement("div")
-            div.innerHTML = '<div id="tagRepresent' + tag + '"><h1>#' + tag + '</h1></div> <h3 class="postCount"></h3>'
-            div.setAttribute("class", tag + " tagDiv");
-            $("#photoTable").append(div);
-            $("#tagRepresent" + tag).on("click", () => {
-                $("." + tag).find("img").each((i, el) => {
-                    toggleDelete(el.id);
-                })
-            })
-        }
-
-
+        newFolder(tag);
         data.posts.forEach(post => {
             if (post.tag == tag) {
                 if ($("#" + post.id).length == 0) {
@@ -108,7 +155,8 @@ const createPhotoTable = (data) => {
                     $(".tagDiv").find("#" + post.id).on("click", (event) => {
                         toggleDelete(event.target.id);
                     })
-                    $("#tagRepresent" + tag).siblings(".postCount").html( $("." + tag + " img").length + " posts");
+                    $("#tagRepresent" + tag).siblings(".postCount").html($("." + tag + " img").length + " posts");
+
                 }
             }
 
@@ -116,9 +164,10 @@ const createPhotoTable = (data) => {
 
         $(".teachButtonFor" + tag).remove();
         let teachButton = document.createElement("button");
-        teachButton.setAttribute("class", "teachButtonFor" + tag + " btn btn-success");
+        teachButton.setAttribute("class", "teachButtonFor" + tag + " btn btn-info");
         teachButton.innerHTML = "Teach hashtag " + tag;
         $("." + tag).append(teachButton);
+        $("#teachButtons").append(teachButton);
         $(teachButton).on("click", () => {
             teach(tag);
         })
@@ -127,17 +176,17 @@ const createPhotoTable = (data) => {
 
 }
 const toggleDelete = (id) => {
-    if (idsToDelete.indexOf(id) == -1) {
+    if (selectedIDs.indexOf(id) == -1) {
         $("#" + id).addClass("toDelete");
-        idsToDelete.push(id);
+        selectedIDs.push(id);
     } else {
         $("#" + id).removeClass("toDelete");
-        idsToDelete.splice(idsToDelete.indexOf(id), 1);
+        selectedIDs.splice(selectedIDs.indexOf(id), 1);
     }
     toggleDelButton();
 }
 const toggleDelButton = () => {
-    if (idsToDelete.length > 0) {
+    if (selectedIDs.length > 0) {
         $(".delButton").removeAttr("disabled")
     } else {
         $(".delButton").attr("disabled", "")
@@ -150,10 +199,30 @@ const checkForDifferences = (data) => {
         }
     })
 }
+
 $(document).ready(() => {
     $("#photoDownloadForm").submit(function (e) {
         e.preventDefault();
     });
+
 });
+
+
+
+
+// const uploadOwnPhotos = (input) => {
+//     // var formData = new FormData();
+
+//     // formData.append("username", "Groucho");
+//     // formData.append("accountnum", 123456); // number 123456 is immediately converted to a string "123456"
+
+//     // // HTML file input, chosen by user
+//     // formData.append("files", input.files);
+//     // console.log(input.files);
+//     var request = new XMLHttpRequest();
+//     request.open("POST", "/photos/upload");
+//     request.send(input.files);
+// }
+
 
 

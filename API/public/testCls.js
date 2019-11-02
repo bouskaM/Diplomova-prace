@@ -34,7 +34,7 @@ socket.on('testPhotos', async (data) => {
 });
 
 window.addEventListener('load', function () {
-  document.querySelector('input[type="file"]').addEventListener('change', function () {
+  document.querySelector('input[type="file"].testClassificatior').addEventListener('change', function () {
     if (this.files && this.files[0]) {
       var img = document.getElementById('myTestImg');
       img.src = URL.createObjectURL(this.files[0]);
@@ -42,7 +42,6 @@ window.addEventListener('load', function () {
     }
   });
 });
-
 $(document).ready(() => {
   $("#photoTestForm").submit(function (e) {
     e.preventDefault();

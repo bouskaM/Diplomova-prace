@@ -7,6 +7,7 @@
     border: solid 2px black;
     border-radius: 5px;
     margin: 25px 0 25px 0;
+    padding: 0 5px 5px 5px;
 }
 
 .toDelete{
@@ -45,7 +46,10 @@ canvas{
 .btn{
     margin-top: 10px;
     margin-right: 5px;
+    margin-left: 5px;
 }
+
+
 
 #snackbar {
     visibility: hidden;
@@ -62,6 +66,7 @@ canvas{
     bottom: 30px;
     font-size: 17px;
   }
+
   
   #snackbar.show {
     visibility: visible;
