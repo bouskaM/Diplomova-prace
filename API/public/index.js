@@ -199,30 +199,11 @@ const checkForDifferences = (data) => {
         }
     })
 }
-
 $(document).ready(() => {
     $("#photoDownloadForm").submit(function (e) {
         e.preventDefault();
     });
 
 });
-
-
-
-
-// const uploadOwnPhotos = (input) => {
-//     // var formData = new FormData();
-
-//     // formData.append("username", "Groucho");
-//     // formData.append("accountnum", 123456); // number 123456 is immediately converted to a string "123456"
-
-//     // // HTML file input, chosen by user
-//     // formData.append("files", input.files);
-//     // console.log(input.files);
-//     var request = new XMLHttpRequest();
-//     request.open("POST", "/photos/upload");
-//     request.send(input.files);
-// }
-
 
 

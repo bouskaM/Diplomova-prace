@@ -41,6 +41,8 @@ canvas{
 
 .myTestImgDiv{
     margin-top: 20px;
+    border: solid 1px black;
+    border-radius: 3px;
 }
 
 .btn{
