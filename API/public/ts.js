@@ -67,20 +67,19 @@ const showTeachPage = () => {
 
 }
 
-const webcamPredict = async () => {
+const webcamPredict = async (keep = true) => {
   const webcamElement = document.getElementById('webcam');
   const webcam = await tf.data.webcam(webcamElement);
-  while (true) {
+  while (document.getElementById('webcam')) {
     if (classifier.getNumClasses() > 0) {
       const img = await webcam.capture();
 
       const activation = net.infer(img, 'conv_preds');
       const result = await classifier.predictClass(activation); 
-      console.log(result);
-      // document.getElementById('liveResults').innerText = `
-      //   prediction: ${classes[result.label]}\n
-      //   probability: ${result.confidences[result.label]}
-      // `;
+      document.getElementById('liveResults').innerText = `
+        prediction: ${result.label}\n
+        probability: ${result.confidences[result.label]}
+      `;
 
       // Dispose the tensor to release the memory.
       img.dispose();

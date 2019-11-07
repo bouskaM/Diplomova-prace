@@ -85,15 +85,42 @@ const newFolder = (tag) => {
         })
     }
 }
-const toggleWebcam = () => {
+const toggleWebcam = async () => {
     $(".webcamDiv").toggle();
     if ($("#webcam").length == 0) {
         $(".webcamDiv").append(`<video autoplay playsinline muted id="webcam" width="224" height="224"></video>`);
+        let webcamElement = document.getElementById("webcam");
+        await setupWebcam(webcamElement);
+        webcamPredict()
     } else {
+        vidStop();
         $("#webcam").remove();
     }
 }
 
+async function setupWebcam(webcamElement) {
+    return new Promise((resolve, reject) => {
+        const navigatorAny = navigator;
+        navigator.getUserMedia = navigator.getUserMedia ||
+            navigatorAny.webkitGetUserMedia || navigatorAny.mozGetUserMedia ||
+            navigatorAny.msGetUserMedia;
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({ video: true },
+                stream => {
+                    webcamElement.srcObject = stream;
+                    webcamElement.addEventListener('loadeddata', () => resolve(), false);
+                },
+                error => reject());
+        } else {
+            reject();
+        }
+    });
+}
+const vidStop = () => {
+    var video = document.getElementById('webcam');
+    video.pause();
+    video.srcObject = null;
+}
 
 const createPhotoTable = (data) => {
     checkForDifferences(data);
