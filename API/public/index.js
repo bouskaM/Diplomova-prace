@@ -85,6 +85,16 @@ const newFolder = (tag) => {
         })
     }
 }
+const toggleWebcam = () => {
+    $(".webcamDiv").toggle();
+    if ($("#webcam").length == 0) {
+        $(".webcamDiv").append(`<video autoplay playsinline muted id="webcam" width="224" height="224"></video>`);
+    } else {
+        $("#webcam").remove();
+    }
+}
+
+
 const createPhotoTable = (data) => {
     checkForDifferences(data);
     if (($(".delButton").length == 0)) {

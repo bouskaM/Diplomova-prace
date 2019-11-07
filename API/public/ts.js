@@ -67,6 +67,29 @@ const showTeachPage = () => {
 
 }
 
+const webcamPredict = async () => {
+  const webcamElement = document.getElementById('webcam');
+  const webcam = await tf.data.webcam(webcamElement);
+  while (true) {
+    if (classifier.getNumClasses() > 0) {
+      const img = await webcam.capture();
+
+      const activation = net.infer(img, 'conv_preds');
+      const result = await classifier.predictClass(activation); 
+      console.log(result);
+      // document.getElementById('liveResults').innerText = `
+      //   prediction: ${classes[result.label]}\n
+      //   probability: ${result.confidences[result.label]}
+      // `;
+
+      // Dispose the tensor to release the memory.
+      img.dispose();
+    }
+
+    await tf.nextFrame();
+  }
+}
+
 checkForClassifiers(classifier);
 
 

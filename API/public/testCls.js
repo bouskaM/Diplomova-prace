@@ -83,7 +83,6 @@ const testImg = async (testImg) => {
     if (result.classIndex == i) {
       radio.setAttribute("checked", "");
       radio.setAttribute("predicted", "");
-      radio.setAttribute("style",'color:blue');
     }
     $(testImg).parent().append(radio);
     $(testImg).parent().append(" " + Object.keys(result.confidences)[i] + "  ");
