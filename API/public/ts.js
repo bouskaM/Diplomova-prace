@@ -67,10 +67,10 @@ const showTeachPage = () => {
 
 }
 
-const webcamPredict = async (keep = true) => {
+const webcamPredict = async () => {
   const webcamElement = document.getElementById('webcam');
   const webcam = await tf.data.webcam(webcamElement);
-  while (document.getElementById('webcam')) {
+  while (webcamElement) {
     if (classifier.getNumClasses() > 0) {
       const img = await webcam.capture();
 
@@ -80,11 +80,8 @@ const webcamPredict = async (keep = true) => {
         prediction: ${result.label}\n
         probability: ${result.confidences[result.label]}
       `;
-
-      // Dispose the tensor to release the memory.
       img.dispose();
     }
-
     await tf.nextFrame();
   }
 }

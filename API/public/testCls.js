@@ -1,9 +1,10 @@
 let numOfImages = 0;
 const handleTest = async () => {
   let testTag = $("[name=testHashtag]").val();
-  let testPhotoCount = $("[name=testNumOfPhotos]").val()
-  let isHeadless = $("[name=TestisHeadless]")[0].checked
-  await socket.emit("testPhotos", { testTag, testPhotoCount, isHeadless });
+  let testPhotoCount = $("[name=testNumOfPhotos]").val();
+  let isHeadless = $("[name=TestisHeadless]")[0].checked;
+  let isFast = document.getElementsByName("testIsFast")[0].checked;
+  await socket.emit("testPhotos", { testTag, testPhotoCount, isHeadless, isFast });
   $(".testLoader").show();
 }
 
@@ -21,6 +22,7 @@ const createTable = (tableData) => {
     <th scope="col" >Correctly Classified</th>
     <th scope="col" >Incorectly Classified</th>
   </tr>
+  <button onclick="saveIncorrect()">Save Incorrectly Classified</button>
   `;
   tableData.forEach(function (rowData) {
     var row = document.createElement('tr');
@@ -56,6 +58,19 @@ const showResults = () => {
     }
   })
   createTable(results);
+}
+
+const saveIncorrect = async() => {
+  let postsUrls = [];
+  classes = getClassesArr();
+  $(".testImgDiv").each((i, el) => {
+    let checkedInput = $(el).find("input:checked");
+    if ($(checkedInput).is("[predicted]")) {
+    } else {
+      postsUrls.push([$(el).find("img").attr('src'), checkedInput.attr("value")]);
+    }
+  });
+  await socket.emit("corrections", { postsUrls });
 }
 const getClassesArr = () => {
   arr = [];
@@ -107,7 +122,6 @@ socket.on('testPhotos', async (data) => {
     $(div).append(pre);
     $(".testPhotos").append(div);
   });
-
 });
 
 window.addEventListener('load', function () {

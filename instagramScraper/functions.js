@@ -64,6 +64,7 @@ const asyncdownloadIstaThumbs = async (page, selector, reqPostCount, TAG) => {
     return posts;
 }
 
+
 const downloadIstaThumbs = async (browser, page, selector, reqPostCount, TAG) => {
     let photosDownloaded = 0;
     let maxcounter = 0;
@@ -104,6 +105,37 @@ const downloadIstaThumbs = async (browser, page, selector, reqPostCount, TAG) =>
     }, 150);
 }
 
+const getIstaThumbs = async (browser, page, selector, reqPostCount, TAG) => {
+    let counter = 0;
+    let result = [];
+    return new Promise(async function (resolve) {
+        let interval = setInterval(async () => {
+            if (counter >= reqPostCount) {
+                browser.close();
+                clearInterval(interval);
+                resolve(result);
+            }
+            try {
+                let post = await page.evaluate(async ({ selector, reqPostCount }) => {
+                    return new Promise((resolve, reject) => {
+                        let selElement = document.querySelector(selector);
+                        selElement.scrollIntoView();
+                        let link = selElement.src;
+                        selElement.remove();
+                        resolve(link);
+                    });
+                }, { selector, reqPostCount });
+                if (post) {
+                    counter++;
+                    result.push(post);
+                }
+            } catch (error) {
+            }
+
+        }, 150);
+    })
+}
+
 const newTab = async (browser, url) => {
     let tab = await browser.newPage();
     await tab.goto(url, { waitUntil: 'networkidle0' });
@@ -116,7 +148,9 @@ const downloadPosts = async (browser, posts, count, TAG) => {
         i++;
         const photoTab = await newTab(browser, posts[i]);
         const src = await getInstaPostSrc(photoTab);
+        const postTags = await getInstaPostTags(photoTab);
         photoTab.close();
+
         if (src) {
             counter++;
             if (!fs.existsSync('./scraped/' + TAG)) {
@@ -131,7 +165,7 @@ const downloadPosts = async (browser, posts, count, TAG) => {
                 console.log('Success:', posts[i], 'has been downloaded successfully.');
                 i++;
                 db.get('posts')
-                    .push({ id: uniqueId, tag: TAG, url: src, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl: `/${TAG}/${uniqueId}.png` })
+                    .push({ id: uniqueId, tag: TAG, url: src, pwd: `./scraped/${TAG}/${uniqueId}.png`, webUrl: `/${TAG}/${uniqueId}.png`, allTags: postTags })
                     .write()
             } else {
                 console.log('Error:', posts[i], 'was not downloaded.');
@@ -187,6 +221,21 @@ const getInstaPostSrc = async (page) => {
     return imageUrl;
 }
 
+const getInstaPostTags = async (page) => {
+    let tags = await page.evaluate(() => {
+        let tags = [].slice.call(document.querySelectorAll(`[href*="/explore/tags/"`));
+        tags = tags.map((tag) => {
+            return tag.innerText;
+        });
+        if (tags != undefined) {
+            return tags
+        } else {
+            return undefined;
+        }
+    });
+    return tags;
+}
+
 module.exports = {
-    asyncBrowser, asyncgetIstaPosts, newTab, getInstaPostSrc, downloadPosts, download, asyncdownloadIstaThumbs, downloadAll, downloadIstaThumbs
+    asyncBrowser, asyncgetIstaPosts, newTab, getInstaPostSrc, downloadPosts, download, asyncdownloadIstaThumbs, downloadAll, downloadIstaThumbs, getIstaThumbs
 }

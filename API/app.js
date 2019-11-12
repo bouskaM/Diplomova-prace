@@ -8,6 +8,7 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const shortid = require('shortid');
 const getSrcs = require('./getSrcs');
+const downloadCorrections = require('./downloadCorrections');
 var multer = require('multer')
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -71,9 +72,14 @@ io.on('connection', function (socket) {
             let tag = data.testTag;
         }
         let isHeadless = data.isHeadless;
-        let photoSrcs = await getSrcs.getSrcs(photoCount, tag, isHeadless);
+        let isFast = data.isFast;
+        let photoSrcs = await getSrcs.getSrcs(photoCount, tag, isHeadless, isFast);
         socket.emit('testPhotos', { photoSrcs });
     });
+
+    socket.on('corrections', async (data) =>{
+        downloadCorrections.downloadCorrections(data.postsUrls);
+    })
 });
 
 
