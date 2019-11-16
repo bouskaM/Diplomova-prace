@@ -17,14 +17,16 @@ const createTable = (tableData) => {
   table.setAttribute("class", "table");
   table.setAttribute("id", "resultTable");
   tableHead.innerHTML = `  
+  <button onclick="saveIncorrect()" class="btn btn-info">Save Incorrectly Classified</button>
   <tr>
     <th scope="col" >Tag</th>
     <th scope="col" >Correctly Classified</th>
     <th scope="col" >Incorectly Classified</th>
   </tr>
-  <button onclick="saveIncorrect()">Save Incorrectly Classified</button>
+
   `;
   tableData.forEach(function (rowData) {
+    console.log(rowData);
     var row = document.createElement('tr');
 
     rowData.forEach(function (cellData) {
@@ -32,6 +34,8 @@ const createTable = (tableData) => {
       cell.appendChild(document.createTextNode(cellData));
       row.appendChild(cell);
     });
+    row.insertAdjacentHTML('beforeend', `<td><button onclick='saveAllOfTag("${rowData[0]}")' class="btn btn-info">Download All</button></td>`);
+    row.insertAdjacentHTML('beforeend', `<td><button onclick='saveIncorrectOfTag("${rowData[0]}")'  class="btn btn-info">Download Incorrect</button></td>`);
 
     tableBody.appendChild(row);
   });
@@ -60,9 +64,8 @@ const showResults = () => {
   createTable(results);
 }
 
-const saveIncorrect = async() => {
+const saveIncorrect = async () => {
   let postsUrls = [];
-  classes = getClassesArr();
   $(".testImgDiv").each((i, el) => {
     let checkedInput = $(el).find("input:checked");
     if ($(checkedInput).is("[predicted]")) {
@@ -72,6 +75,30 @@ const saveIncorrect = async() => {
   });
   await socket.emit("corrections", { postsUrls });
 }
+
+const saveAllOfTag = async (tag) => {
+  let postsUrls = [];
+  $(".testImgDiv").each((i, el) => {
+    let checkedInput = $(el).find("input:checked");
+    if ($(checkedInput).val() == tag) {
+      postsUrls.push([$(el).find("img").attr('src'), checkedInput.attr("value")]);
+    } else {
+    }
+  });
+  await socket.emit("corrections", { postsUrls });
+}
+const saveIncorrectOfTag = async (tag) => {
+  let postsUrls = [];
+  $(".testImgDiv").each((i, el) => {
+    let checkedInput = $(el).find("input:checked");
+    if ($(checkedInput).val() == tag && !$(checkedInput).is("[predicted]")) {
+      postsUrls.push([$(el).find("img").attr('src'), checkedInput.attr("value")]);
+    } else {
+    }
+  });
+  await socket.emit("corrections", { postsUrls });
+}
+
 const getClassesArr = () => {
   arr = [];
   for (let i = 0; i < classifier.getNumClasses(); i++) {
