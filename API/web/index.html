@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Diplomová práce</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+        integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+    <script src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
+    <script src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
+</head>
+
+<body>
+    <div>
+        <div class="container ml-auto mr-3">
+            <div class="">
+                <div class="row ml-auto mr-3">
+                    <div class="col-12 text-center">
+                        <h1 class="">Diplomová práce</h1>
+                        <div class="classifierTable">
+                            <h1>Classifier:</h1>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="teaching">
+                        <div class="d-flex justify-content-center">
+                            <form id="photoDownloadForm" class="d-flex justify-content-around">
+                                <label>#hashtag</label>
+                                <input class="form-control col-3 p-2" type="text" name="hashtag" required />
+                                <label>Number of Photos</label>
+                                <input class="form-control col-3 p-2" type="number" name="numOfPhotos" value="5"
+                                    required />
+                                <input type="checkbox" name="isHeadless" value="isHeadless" > Headless mode<br>
+                                <input type="checkbox" name="isFast" value="isFast" checked > Fastmode (downloads thumbnails of posts)<br>
+                                <input type="submit" value="Download!" class="btn btn-secondary p-2"
+                                    onclick="handleScrape()" />
+                            </form>
+                        </div>
+                        <div class="text-center">
+                            <div class="loader loader--style8" hidden>
+                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px"
+                                    height="30px" viewBox="0 0 24 30" style="enable-background:new 0 0 50 50;"
+                                    xml:space="preserve">
+                                    <rect x="0" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                        <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                            begin="0s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                            begin="0s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0s"
+                                            dur="0.6s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="8" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                        <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                            begin="0.15s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                            begin="0.15s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0.15s"
+                                            dur="0.6s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="16" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                        <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                            begin="0.3s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                            begin="0.3s" dur="0.6s" repeatCount="indefinite" />
+                                        <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0.3s"
+                                            dur="0.6s" repeatCount="indefinite" />
+                                    </rect>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="controlButtons"></div>
+                        <div id="teachButtons"></div>
+                        <div id="photoTable">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="testing" hidden>
+                <div class="d-flex justify-content-center">
+                    <form id="photoTestForm" class="d-flex justify-content-around">
+                        <label>#hashtag</label>
+                        <input class="form-control col-3 p-2" type="text" name="testHashtag" required value="running" />
+                        <label>Number of Photos</label>
+                        <input class="form-control col-3 p-2" type="number" name="testNumOfPhotos" value="100" required />
+                        <input type="checkbox" name="TestisHeadless" value="testIsHeadless" > Headless mode<br>
+                        <input type="checkbox" name="testIsFast" value="testIsFast" checked > Fastmode (get thumbnails)<br>
+                        <input type="submit" name="TestPhotosButton" value="Test" class="btn btn-secondary p-2"
+                            onclick="handleTest()" />
+                    </form>
+                    <div class="testLoader loader--style8 text-center" hidden>
+                        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px"
+                            height="30px" viewBox="0 0 24 30" style="enable-background:new 0 0 50 50;"
+                            xml:space="preserve">
+                            <rect x="0" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                    begin="0s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                    begin="0s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0s"
+                                    dur="0.6s" repeatCount="indefinite" />
+                            </rect>
+                            <rect x="8" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                    begin="0.15s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                    begin="0.15s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0.15s"
+                                    dur="0.6s" repeatCount="indefinite" />
+                            </rect>
+                            <rect x="16" y="10" width="4" height="10" fill="#333" opacity="0.2">
+                                <animate attributeName="opacity" attributeType="XML" values="0.2; 1; .2"
+                                    begin="0.3s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="height" attributeType="XML" values="10; 20; 10"
+                                    begin="0.3s" dur="0.6s" repeatCount="indefinite" />
+                                <animate attributeName="y" attributeType="XML" values="10; 5; 10" begin="0.3s"
+                                    dur="0.6s" repeatCount="indefinite" />
+                            </rect>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="testPhotos">
+                    <div class="myTestImgDiv">
+                        <input class="testClassificatior" type='file' />
+                        <button class="btn btn-info" onclick="toggleWebcam()">Show/hide webcam</button>
+                        <div class="webcamDiv" hidden>
+                            <h3>Webcam</h1>
+                              <div id="liveResults"></div>
+                        </div>
+                        <div>
+                            <img id="myTestImg" src="#" alt="your image" height=200 hidden>
+                            <pre hidden><code></code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="resultCounts">
+                    <h2>Results:</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+        crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+        integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+        crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="index.js"></script>
+    <script src="ts.js"></script>
+    <script src="testCls.js"></script>
+    <script src="objectDetection.js"></script>
+
+</body>
+
+</html>
